@@ -30,16 +30,17 @@ def DFS(p)
 #### 循环伪码
 
 ```python
-s=[]
 def DFS(p)
+    s=[]
     s.push(p)
+    p.searched()
     while not s.isEmpty()
         d=s.pop()
-        d.searched()
         for near in d.near
             if not near.isSearched()
                 printf near
                 s.push(near)
+                d.searched()
 ```
 
 ### 分析

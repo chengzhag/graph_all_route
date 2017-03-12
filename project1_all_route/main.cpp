@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <list>
 #include <vector>
+#include <stack>
 
 using namespace std;
 
@@ -18,11 +19,35 @@ public:
 	Vertex(C dataInit);
 	bool isSearched();
 	void searched();
+	void unSearched();
 	void addAdj(Vertex<C>& adj);
 	void deleteAdj(Vertex<C>& adj);
+	bool operator==(Vertex const & v);
 	template<class C>
 	friend ostream& operator<<(ostream & os,const Vertex<C> & v);
 };
+
+template<class C>
+ostream& operator<<(ostream & os, const vector<Vertex<C>*> v) {
+	vector<Vertex<C>*>::const_iterator it;
+	for (it = v.begin(); it != v.end(); it++)
+	{
+		os << (*it)->data;
+	}
+	return os;
+}
+
+template<class C>
+void Vertex<C>::unSearched()
+{
+	flagSearched = false;
+}
+
+template<class C>
+bool Vertex<C>::operator==(Vertex<C> const & v)
+{
+	return this == &v;
+}
 
 template<class C>
 ostream& operator<<(ostream & os,const Vertex<C> & v) {
@@ -81,23 +106,71 @@ class Graph
 {
 	int numVertex;
 	vector<Vertex<C>> vertexes;
+	void depthFirstSearch(Vertex<C> &v);
+	void findAllRoute(Vertex<C> &src, Vertex<C> &dst, vector<vector<Vertex<C>*>> &searchRoutes);
 public:
 	Graph() :numVertex(0) {};
 	void addVertex();
 	void addVertex(C dataInit);
-	void addEdge(int src,int dst);
+	void addArc(int src,int dst);
 	void deleteEdge(int src, int dst);
+	void unSearchAll();
 	void depthFirstSearch(int src);
-	void depthFirstSearch(Vertex<C> &v);
+	void findAllRoute(int src, int dst, vector<vector<Vertex<C>*>> &searchRoutes);
 	template<class C>
 	friend std::ostream& operator<<(std::ostream &os, const Graph<C> &g);
 };
 
 template<class C>
+void Graph<C>::unSearchAll()
+{
+	vector<Vertex<C>>::iterator it;
+	for (it = vertexes.begin(); it != vertexes.end(); it++)
+	{
+		(*it).unSearched();
+	}
+}
+
+template<class C>
+void Graph<C>::findAllRoute(Vertex<C> &src, Vertex<C> &dst, vector<vector<Vertex<C>*>> &searchRoutes)
+{
+	static vector<Vertex<C>*> searchRoute;
+	src.searched();
+	searchRoute.push_back(&src);
+	//cout << src.data;
+	if (src == dst)
+	{
+		searchRoutes.push_back(searchRoute);
+		//cout << searchRoute << endl;
+		searchRoute.pop_back();
+		return;
+	}
+	list<Vertex<C>*>::iterator it;
+	for (it = src.adjvex.begin(); it != src.adjvex.end(); it++)
+	{
+		if (!(*it)->isSearched())
+		{
+			findAllRoute(**it, dst, searchRoutes);
+			(*it)->unSearched();
+		}
+	}
+	searchRoute.pop_back();
+}
+
+template<class C>
+void Graph<C>::findAllRoute(int src, int dst, vector<vector<Vertex<C>*>> &searchRoutes)
+{
+	unSearchAll();
+	searchRoutes.clear();
+	findAllRoute(vertexes[src], vertexes[dst], searchRoutes);
+}
+
+//递归实现
+template<class C>
 void Graph<C>::depthFirstSearch(Vertex<C> &v)
 {
 	v.searched();
-	cout << v.data << endl;
+	cout << v.data;
 	list<Vertex<C>*>::iterator it;
 	for (it = v.adjvex.begin(); it != v.adjvex.end(); it++)
 	{
@@ -108,9 +181,35 @@ void Graph<C>::depthFirstSearch(Vertex<C> &v)
 	}
 }
 
+////堆栈实现
+//template<class C>
+//void Graph<C>::depthFirstSearch(Vertex<C> &v)
+//{
+//	stack<Vertex<C>*> searchStack;
+//	searchStack.push(&v);
+//	v.searched();
+//	Vertex<C>*nowVertex;
+//	while (!searchStack.empty())
+//	{
+//		nowVertex = searchStack.top();
+//		searchStack.pop();
+//		cout << nowVertex->data;
+//		list<Vertex<C>*>::iterator it;
+//		for (it = nowVertex->adjvex.begin(); it != nowVertex->adjvex.end(); it++)
+//		{
+//			if (!(*it)->isSearched())
+//			{
+//				searchStack.push(*it);
+//				(*it)->searched();
+//			}
+//		}
+//	}
+//}
+
 template<class C>
 void Graph<C>::depthFirstSearch(int src)
 {
+	unSearchAll();
 	depthFirstSearch(vertexes[src]);
 }
 
@@ -138,7 +237,7 @@ void Graph<C>::addVertex(C dataInit)
 }
 
 template<class C>
-void Graph<C>::addEdge(int src, int dst)
+void Graph<C>::addArc(int src, int dst)
 {
 	vertexes[src].addAdj(vertexes[dst]);
 }
@@ -157,16 +256,22 @@ int main()
 	{
 		testGraph.addVertex('A' + i);
 	}
-	testGraph.addEdge(0, 4);
-	testGraph.addEdge(4, 3);
-	testGraph.addEdge(4, 1);
-	testGraph.addEdge(1, 0);
-	testGraph.addEdge(1, 2);
-	testGraph.addEdge(2, 3);
+	testGraph.addArc(0, 4);
+	testGraph.addArc(4, 3);
+	testGraph.addArc(4, 1);
+	testGraph.addArc(1, 0);
+	testGraph.addArc(1, 2);
+	testGraph.addArc(2, 3);
 	cout << testGraph<<endl;
 
-	testGraph.depthFirstSearch(0);
-	
+	//testGraph.depthFirstSearch(0);
+	//cout << endl;
+	vector<vector<Vertex<char>*>> searchRoutes;
+	testGraph.findAllRoute(0, 3, searchRoutes);
+	for (int i = 0; i < searchRoutes.size(); i++)
+	{
+		cout << searchRoutes[i] << endl;
+	}
 	return 0;
 }
 
