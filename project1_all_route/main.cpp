@@ -7,14 +7,6 @@
 
 using namespace std;
 
-//ostream& operator<< (ostream& out, list<int>& _list)
-//{
-//	list<int>::const_iterator it = _list.begin();
-//	for (; it != _list.end(); ++it)
-//		out << *it << "\t";
-//	return out;
-//}
-
 template<class C>
 class Vertex
 {
@@ -28,11 +20,12 @@ public:
 	void searched();
 	void addAdj(Vertex<C>& adj);
 	void deleteAdj(Vertex<C>& adj);
-	friend ostream& operator<< <>(ostream & os,const Vertex<C> & v);
+	template<class C>
+	friend ostream& operator<<(ostream & os,const Vertex<C> & v);
 };
 
 template<class C>
-ostream& operator<< <>(ostream & os,const Vertex<C> & v) {
+ostream& operator<<(ostream & os,const Vertex<C> & v) {
 	os << v.data<<" -> ";
 	list<Vertex<C>*>::const_iterator it;
 	for (it = v.adjvex.begin(); it != v.adjvex.end(); it++)
@@ -79,7 +72,7 @@ bool Vertex<C>::isSearched()
 template<class C>
 void Vertex<C>::searched()
 {
-	flagSearched = true
+	flagSearched = true;
 }
 
 
@@ -94,8 +87,32 @@ public:
 	void addVertex(C dataInit);
 	void addEdge(int src,int dst);
 	void deleteEdge(int src, int dst);
-	friend std::ostream& operator<< <>(std::ostream &os, const Graph<C> &g);
+	void depthFirstSearch(int src);
+	void depthFirstSearch(Vertex<C> &v);
+	template<class C>
+	friend std::ostream& operator<<(std::ostream &os, const Graph<C> &g);
 };
+
+template<class C>
+void Graph<C>::depthFirstSearch(Vertex<C> &v)
+{
+	v.searched();
+	cout << v.data << endl;
+	list<Vertex<C>*>::iterator it;
+	for (it = v.adjvex.begin(); it != v.adjvex.end(); it++)
+	{
+		if (!(*it)->isSearched())
+		{
+			depthFirstSearch(**it);
+		}
+	}
+}
+
+template<class C>
+void Graph<C>::depthFirstSearch(int src)
+{
+	depthFirstSearch(vertexes[src]);
+}
 
 template<class C>
 void Graph<C>::deleteEdge(int src, int dst)
@@ -104,7 +121,7 @@ void Graph<C>::deleteEdge(int src, int dst)
 }
 
 template<class C>
-std::ostream& operator<< <>(std::ostream &os, const Graph<C> &g) {
+std::ostream& operator<<(std::ostream &os, const Graph<C> &g) {
 	vector<Vertex<C>>::const_iterator it;
 	for (it = g.vertexes.begin(); it != g.vertexes.end(); it++)
 	{
@@ -140,16 +157,15 @@ int main()
 	{
 		testGraph.addVertex('A' + i);
 	}
-	cout << testGraph;
-	for (int i = 0; i < 5; i++)
-	{
-		testGraph.addEdge(i, i);
-	}
-	testGraph.addEdge(2, 4);
-	testGraph.addEdge(2, 3);
+	testGraph.addEdge(0, 4);
+	testGraph.addEdge(4, 3);
+	testGraph.addEdge(4, 1);
 	testGraph.addEdge(1, 0);
-	testGraph.deleteEdge(0, 0);
-	cout << testGraph;
+	testGraph.addEdge(1, 2);
+	testGraph.addEdge(2, 3);
+	cout << testGraph<<endl;
+
+	testGraph.depthFirstSearch(0);
 	
 	return 0;
 }

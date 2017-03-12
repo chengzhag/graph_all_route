@@ -20,10 +20,10 @@
 
 ```python
 def DFS(p)
+    printf p
+    p.searched
     for near in p.near
         if not near.isSearched()
-            printf near
-            near.searched()
             DFS(near)
 ```
 
