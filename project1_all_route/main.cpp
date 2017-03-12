@@ -107,19 +107,35 @@ class Graph
 	int numVertex;
 	vector<Vertex<C>> vertexes;
 	void depthFirstSearch(Vertex<C> &v);
-	void findAllRoute(Vertex<C> &src, Vertex<C> &dst, vector<vector<Vertex<C>*>> &searchRoutes);
+	void findAllRoute(Vertex<C> &src, Vertex<C> &dst);
 public:
 	Graph() :numVertex(0) {};
 	void addVertex();
 	void addVertex(C dataInit);
-	void addArc(int src,int dst);
-	void deleteEdge(int src, int dst);
+	void addDirectedArc(int src,int dst);
+	void addUndirectedArc(int src, int dst);
+	void deleteDirectedArc(int src, int dst);
+	void deleteUndirectedArc(int src, int dst);
 	void unSearchAll();
 	void depthFirstSearch(int src);
-	void findAllRoute(int src, int dst, vector<vector<Vertex<C>*>> &searchRoutes);
+	void findAllRoute(int src, int dst);
 	template<class C>
 	friend std::ostream& operator<<(std::ostream &os, const Graph<C> &g);
 };
+
+template<class C>
+void Graph<C>::deleteUndirectedArc(int src, int dst)
+{
+	deleteDirectedArc(src, dst);
+	deleteDirectedArc(dst, src);
+}
+
+template<class C>
+void Graph<C>::addUndirectedArc(int src, int dst)
+{
+	addDirectedArc(src, dst);
+	addDirectedArc(dst, src);
+}
 
 template<class C>
 void Graph<C>::unSearchAll()
@@ -132,7 +148,7 @@ void Graph<C>::unSearchAll()
 }
 
 template<class C>
-void Graph<C>::findAllRoute(Vertex<C> &src, Vertex<C> &dst, vector<vector<Vertex<C>*>> &searchRoutes)
+void Graph<C>::findAllRoute(Vertex<C> &src, Vertex<C> &dst)
 {
 	static vector<Vertex<C>*> searchRoute;
 	src.searched();
@@ -140,8 +156,7 @@ void Graph<C>::findAllRoute(Vertex<C> &src, Vertex<C> &dst, vector<vector<Vertex
 	//cout << src.data;
 	if (src == dst)
 	{
-		searchRoutes.push_back(searchRoute);
-		//cout << searchRoute << endl;
+		cout << searchRoute << endl;
 		searchRoute.pop_back();
 		return;
 	}
@@ -150,7 +165,7 @@ void Graph<C>::findAllRoute(Vertex<C> &src, Vertex<C> &dst, vector<vector<Vertex
 	{
 		if (!(*it)->isSearched())
 		{
-			findAllRoute(**it, dst, searchRoutes);
+			findAllRoute(**it, dst);
 			(*it)->unSearched();
 		}
 	}
@@ -158,11 +173,10 @@ void Graph<C>::findAllRoute(Vertex<C> &src, Vertex<C> &dst, vector<vector<Vertex
 }
 
 template<class C>
-void Graph<C>::findAllRoute(int src, int dst, vector<vector<Vertex<C>*>> &searchRoutes)
+void Graph<C>::findAllRoute(int src, int dst)
 {
 	unSearchAll();
-	searchRoutes.clear();
-	findAllRoute(vertexes[src], vertexes[dst], searchRoutes);
+	findAllRoute(vertexes[src], vertexes[dst]);
 }
 
 //递归实现
@@ -181,31 +195,6 @@ void Graph<C>::depthFirstSearch(Vertex<C> &v)
 	}
 }
 
-////堆栈实现
-//template<class C>
-//void Graph<C>::depthFirstSearch(Vertex<C> &v)
-//{
-//	stack<Vertex<C>*> searchStack;
-//	searchStack.push(&v);
-//	v.searched();
-//	Vertex<C>*nowVertex;
-//	while (!searchStack.empty())
-//	{
-//		nowVertex = searchStack.top();
-//		searchStack.pop();
-//		cout << nowVertex->data;
-//		list<Vertex<C>*>::iterator it;
-//		for (it = nowVertex->adjvex.begin(); it != nowVertex->adjvex.end(); it++)
-//		{
-//			if (!(*it)->isSearched())
-//			{
-//				searchStack.push(*it);
-//				(*it)->searched();
-//			}
-//		}
-//	}
-//}
-
 template<class C>
 void Graph<C>::depthFirstSearch(int src)
 {
@@ -214,7 +203,7 @@ void Graph<C>::depthFirstSearch(int src)
 }
 
 template<class C>
-void Graph<C>::deleteEdge(int src, int dst)
+void Graph<C>::deleteDirectedArc(int src, int dst)
 {
 	vertexes[src].deleteAdj(vertexes[dst]);
 }
@@ -237,7 +226,7 @@ void Graph<C>::addVertex(C dataInit)
 }
 
 template<class C>
-void Graph<C>::addArc(int src, int dst)
+void Graph<C>::addDirectedArc(int src, int dst)
 {
 	vertexes[src].addAdj(vertexes[dst]);
 }
@@ -251,27 +240,44 @@ void Graph<C>::addVertex()
 
 int main()
 {
-	Graph<char> testGraph;
+	Graph<char> directedGraph;
 	for (int i = 0; i < 5; i++)
 	{
-		testGraph.addVertex('A' + i);
+		directedGraph.addVertex('A' + i);
 	}
-	testGraph.addArc(0, 4);
-	testGraph.addArc(4, 3);
-	testGraph.addArc(4, 1);
-	testGraph.addArc(1, 0);
-	testGraph.addArc(1, 2);
-	testGraph.addArc(2, 3);
-	cout << testGraph<<endl;
+	directedGraph.addDirectedArc(0, 4);
+	directedGraph.addDirectedArc(4, 3);
+	directedGraph.addDirectedArc(4, 1);
+	directedGraph.addDirectedArc(1, 0);
+	directedGraph.addDirectedArc(1, 2);
+	directedGraph.addDirectedArc(2, 3);
+	cout << "有向图的邻接链表：\n" << directedGraph;
+	cout << "从A到D的所有路径：\n";
+	directedGraph.findAllRoute(0, 3);
+	cout << "从D到A的所有路径：\n";
+	directedGraph.findAllRoute(3, 0);
+	cout << "从E到D的所有路径：\n";
+	directedGraph.findAllRoute(4, 0);
 
-	//testGraph.depthFirstSearch(0);
-	//cout << endl;
-	vector<vector<Vertex<char>*>> searchRoutes;
-	testGraph.findAllRoute(0, 3, searchRoutes);
-	for (int i = 0; i < searchRoutes.size(); i++)
+	Graph<char> undirectedGraph;
+	for (int i = 0; i < 5; i++)
 	{
-		cout << searchRoutes[i] << endl;
+		undirectedGraph.addVertex('A' + i);
 	}
+	undirectedGraph.addUndirectedArc(0, 4);
+	undirectedGraph.addUndirectedArc(4, 3);
+	undirectedGraph.addUndirectedArc(4, 1);
+	undirectedGraph.addUndirectedArc(1, 0);
+	undirectedGraph.addUndirectedArc(1, 2);
+	undirectedGraph.addUndirectedArc(2, 3);
+	cout << "\n\n无向图的邻接链表：\n" << undirectedGraph;
+	cout << "从A到D的所有路径：\n";
+	undirectedGraph.findAllRoute(0, 3);
+	cout << "从D到A的所有路径：\n";
+	undirectedGraph.findAllRoute(3, 0);
+	cout << "从E到D的所有路径：\n";
+	undirectedGraph.findAllRoute(4, 0);
+
 	return 0;
 }
 
