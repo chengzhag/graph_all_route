@@ -1,3 +1,6 @@
+//章程 2015010912010
+//https://github.com/pidan1231239/project1_all_route
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
@@ -99,7 +102,6 @@ void Vertex<C>::searched()
 {
 	flagSearched = true;
 }
-
 
 template<class C>
 class Graph
@@ -281,4 +283,33 @@ int main()
 	return 0;
 }
 
+//程序输出：
 
+//从A到D的所有路径：
+//AED
+//AEBCD
+//从D到A的所有路径：
+//从E到D的所有路径：
+//EBA
+//
+//
+//无向图的邻接链表：
+//A->E, B,
+//B->E, A, C,
+//C->B, D,
+//D->E, C,
+//E->A, D, B,
+//从A到D的所有路径：
+//AED
+//AEBCD
+//ABED
+//ABCD
+//从D到A的所有路径：
+//DEA
+//DEBA
+//DCBEA
+//DCBA
+//从E到D的所有路径：
+//EA
+//EDCBA
+//EBA
